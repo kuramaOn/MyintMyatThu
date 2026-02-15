@@ -74,6 +74,24 @@ export default function MenuPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Poll for settings updates every 60 seconds
+  useEffect(() => {
+    async function fetchSettings() {
+      try {
+        const settingsRes = await fetch("/api/settings", { cache: "no-store" })
+        const settingsData = await settingsRes.json()
+        setCurrency(settingsData.currency)
+      } catch (error) {
+        // Silently fail to avoid disrupting user experience
+        console.error("Error polling settings:", error)
+      }
+    }
+
+    const interval = setInterval(fetchSettings, 60000) // Poll every 60 seconds
+
+    return () => clearInterval(interval)
+  }, [])
+
   const filteredItems =
     selectedCategory === "All"
       ? menuItems

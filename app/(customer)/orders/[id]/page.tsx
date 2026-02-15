@@ -44,10 +44,27 @@ export default function OrderConfirmationPage() {
 
     fetchOrder()
 
-    // Poll for updates every 30 seconds
+    // Poll for order updates every 30 seconds (includes settings)
     const interval = setInterval(fetchOrder, 30000)
     return () => clearInterval(interval)
   }, [params.id])
+
+  // Additional polling for settings updates every 60 seconds (lighter weight)
+  useEffect(() => {
+    async function fetchSettings() {
+      try {
+        const settingsRes = await fetch("/api/settings", { cache: "no-store" })
+        const settingsData = await settingsRes.json()
+        setSettings(settingsData)
+      } catch (error) {
+        console.error("Error polling settings:", error)
+      }
+    }
+
+    const interval = setInterval(fetchSettings, 60000) // Poll every 60 seconds
+
+    return () => clearInterval(interval)
+  }, [])
 
   if (loading) {
     return (

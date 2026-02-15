@@ -16,6 +16,8 @@ import {
   Clock,
   CheckCircle,
   XCircle,
+  HardDrive,
+  Cloud,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -43,6 +45,20 @@ interface DatabaseStats {
   revenue: {
     total: number
     completedOrders: number
+  }
+  storage: {
+    mongodb: {
+      used: number
+      limit: number
+      usagePercent: number
+      unit: string
+    }
+    vercelBlob: {
+      used: number
+      limit: number
+      usagePercent: number
+      unit: string
+    }
   }
   recentActivity: {
     orders: any[]
@@ -273,6 +289,135 @@ export default function DatabaseControlPanel() {
           </Button>
         </div>
       </motion.div>
+
+      {/* Storage Capacity Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-green-100 rounded-full">
+                  <HardDrive className="h-6 w-6 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-navy">MongoDB Storage</h3>
+                  <p className="text-sm text-gray-600">Atlas Free Tier (M0)</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Progress Bar */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-600">
+                  {stats.storage.mongodb.used} {stats.storage.mongodb.unit} / {stats.storage.mongodb.limit} {stats.storage.mongodb.unit}
+                </span>
+                <span className={`font-bold ${
+                  stats.storage.mongodb.usagePercent >= 90 ? 'text-red-600' :
+                  stats.storage.mongodb.usagePercent >= 70 ? 'text-yellow-600' :
+                  'text-green-600'
+                }`}>
+                  {stats.storage.mongodb.usagePercent}%
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    stats.storage.mongodb.usagePercent >= 90 ? 'bg-red-500' :
+                    stats.storage.mongodb.usagePercent >= 70 ? 'bg-yellow-500' :
+                    'bg-green-500'
+                  }`}
+                  style={{ width: `${Math.min(stats.storage.mongodb.usagePercent, 100)}%` }}
+                />
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-gray-500">
+                  Remaining: {(stats.storage.mongodb.limit - stats.storage.mongodb.used).toFixed(2)} {stats.storage.mongodb.unit}
+                </span>
+                {stats.storage.mongodb.usagePercent >= 90 && (
+                  <span className="flex items-center text-red-600">
+                    <AlertTriangle className="h-3 w-3 mr-1" />
+                    Critical
+                  </span>
+                )}
+                {stats.storage.mongodb.usagePercent >= 70 && stats.storage.mongodb.usagePercent < 90 && (
+                  <span className="flex items-center text-yellow-600">
+                    <AlertTriangle className="h-3 w-3 mr-1" />
+                    Warning
+                  </span>
+                )}
+              </div>
+            </div>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-blue-100 rounded-full">
+                  <Cloud className="h-6 w-6 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-navy">Vercel Blob Storage</h3>
+                  <p className="text-sm text-gray-600">Images & Assets</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Progress Bar */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-600">
+                  {stats.storage.vercelBlob.used} {stats.storage.vercelBlob.unit} / {stats.storage.vercelBlob.limit} {stats.storage.vercelBlob.unit}
+                </span>
+                <span className={`font-bold ${
+                  stats.storage.vercelBlob.usagePercent >= 90 ? 'text-red-600' :
+                  stats.storage.vercelBlob.usagePercent >= 70 ? 'text-yellow-600' :
+                  'text-green-600'
+                }`}>
+                  {stats.storage.vercelBlob.usagePercent}%
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    stats.storage.vercelBlob.usagePercent >= 90 ? 'bg-red-500' :
+                    stats.storage.vercelBlob.usagePercent >= 70 ? 'bg-yellow-500' :
+                    'bg-green-500'
+                  }`}
+                  style={{ width: `${Math.min(stats.storage.vercelBlob.usagePercent, 100)}%` }}
+                />
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-gray-500">
+                  Remaining: {(stats.storage.vercelBlob.limit - stats.storage.vercelBlob.used).toFixed(2)} {stats.storage.vercelBlob.unit}
+                </span>
+                {stats.storage.vercelBlob.usagePercent >= 90 && (
+                  <span className="flex items-center text-red-600">
+                    <AlertTriangle className="h-3 w-3 mr-1" />
+                    Critical
+                  </span>
+                )}
+                {stats.storage.vercelBlob.usagePercent >= 70 && stats.storage.vercelBlob.usagePercent < 90 && (
+                  <span className="flex items-center text-yellow-600">
+                    <AlertTriangle className="h-3 w-3 mr-1" />
+                    Warning
+                  </span>
+                )}
+              </div>
+            </div>
+          </Card>
+        </motion.div>
+      </div>
 
       {/* Statistics Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

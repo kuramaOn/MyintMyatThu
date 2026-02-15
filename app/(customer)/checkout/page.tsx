@@ -50,6 +50,23 @@ export default function CheckoutPage() {
     fetchSettings()
   }, [items, router])
 
+  // Poll for settings updates every 60 seconds
+  useEffect(() => {
+    async function fetchSettings() {
+      try {
+        const settingsRes = await fetch("/api/settings", { cache: "no-store" })
+        const settingsData = await settingsRes.json()
+        setSettings(settingsData)
+      } catch (error) {
+        console.error("Error polling settings:", error)
+      }
+    }
+
+    const interval = setInterval(fetchSettings, 60000) // Poll every 60 seconds
+
+    return () => clearInterval(interval)
+  }, [])
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {

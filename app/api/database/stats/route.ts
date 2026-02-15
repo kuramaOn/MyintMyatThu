@@ -36,6 +36,18 @@ export async function GET() {
     ]).toArray();
     const totalRevenue = revenueData[0]?.total || 0;
 
+    // Get database storage statistics
+    const dbStats = await db.stats();
+    const mongoDbSizeMB = (dbStats.dataSize / (1024 * 1024)).toFixed(2);
+    const mongoDbLimitMB = 512; // MongoDB Atlas Free Tier (M0) limit
+    const mongoDbUsagePercent = ((dbStats.dataSize / (1024 * 1024)) / mongoDbLimitMB * 100).toFixed(1);
+
+    // Get Vercel Blob storage info (placeholder - would need actual Vercel API call)
+    // For now, estimate based on uploaded files
+    const blobStorageLimitMB = 1024; // 1GB for Vercel Hobby plan
+    const blobStorageSizeMB = 0; // Would calculate from actual blob storage
+    const blobStoragePercent = ((blobStorageSizeMB / blobStorageLimitMB) * 100).toFixed(1);
+
     const stats = {
       collections: {
         orders: {
@@ -55,6 +67,20 @@ export async function GET() {
       revenue: {
         total: totalRevenue,
         completedOrders: completedOrders,
+      },
+      storage: {
+        mongodb: {
+          used: parseFloat(mongoDbSizeMB),
+          limit: mongoDbLimitMB,
+          usagePercent: parseFloat(mongoDbUsagePercent),
+          unit: "MB",
+        },
+        vercelBlob: {
+          used: blobStorageSizeMB,
+          limit: blobStorageLimitMB,
+          usagePercent: parseFloat(blobStoragePercent),
+          unit: "MB",
+        },
       },
       recentActivity: {
         orders: orders,

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
 import { 
   Clock, 
@@ -11,16 +11,21 @@ import {
   CreditCard
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { DashboardStats, Order } from "@/types"
+import { DashboardStats, Order, RestaurantSettings } from "@/types"
 import { formatCurrency } from "@/lib/utils"
 import { containerVariants, itemVariants } from "@/lib/animations"
 import { LoadingSpinner } from "@/components/shared/loading"
+import { requestNotificationPermission, showNotification, playNotificationSound } from "@/lib/notifications"
 
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [recentOrders, setRecentOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [currency, setCurrency] = useState({ code: "JPY", symbol: "¥", position: "before" })
+  const [settings, setSettings] = useState<RestaurantSettings | null>(null)
+  
+  const previousPendingCountRef = useRef<number>(0)
+  const isInitialLoadRef = useRef<boolean>(true)
 
   useEffect(() => {
     async function fetchData() {
@@ -35,9 +40,18 @@ export default function AdminDashboardPage() {
         const ordersData = await ordersRes.json()
         const settingsData = await settingsRes.json()
 
+        // Detect new pending orders
+        const currentPendingCount = statsData.pending
+        if (!isInitialLoadRef.current && currentPendingCount > previousPendingCountRef.current) {
+          handleNewOrderNotification(currentPendingCount - previousPendingCountRef.current, settingsData)
+        }
+        previousPendingCountRef.current = currentPendingCount
+        isInitialLoadRef.current = false
+
         setStats(statsData)
         setRecentOrders(ordersData.slice(0, 10))
         setCurrency(settingsData.currency)
+        setSettings(settingsData)
       } catch (error) {
         console.error("Error fetching dashboard data:", error)
       } finally {
@@ -46,11 +60,30 @@ export default function AdminDashboardPage() {
     }
 
     fetchData()
+    
+    // Request notification permission
+    requestNotificationPermission()
 
     // Poll every 30 seconds
     const interval = setInterval(fetchData, 30000)
     return () => clearInterval(interval)
   }, [])
+  
+  function handleNewOrderNotification(count: number, settingsData: RestaurantSettings) {
+    const message = count === 1 ? "1 new order received!" : `${count} new orders received!`
+    
+    if (settingsData.notifications.sound) {
+      playNotificationSound()
+    }
+    
+    if (settingsData.notifications.desktop) {
+      showNotification("🔔 New Order!", {
+        body: message,
+        tag: "new-order-dashboard",
+        requireInteraction: false,
+      })
+    }
+  }
 
   if (loading || !stats) {
     return (

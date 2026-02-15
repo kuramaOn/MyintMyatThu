@@ -33,6 +33,23 @@ export default function CartPage() {
     fetchCurrency()
   }, [])
 
+  // Poll for settings updates every 60 seconds
+  useEffect(() => {
+    async function fetchSettings() {
+      try {
+        const settingsRes = await fetch("/api/settings", { cache: "no-store" })
+        const settingsData = await settingsRes.json()
+        setCurrency(settingsData.currency)
+      } catch (error) {
+        console.error("Error polling settings:", error)
+      }
+    }
+
+    const interval = setInterval(fetchSettings, 60000) // Poll every 60 seconds
+
+    return () => clearInterval(interval)
+  }, [])
+
   if (items.length === 0) {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center py-12">

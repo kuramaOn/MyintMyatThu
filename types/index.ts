@@ -46,27 +46,6 @@ export interface RestaurantSettings {
   notifications: {
     sound: boolean;
     desktop: boolean;
-    email: boolean;
-  };
-  email: {
-    smtpHost: string;
-    smtpPort: number;
-    smtpUser: string;
-    smtpPassword: string;
-    fromEmail: string;
-    fromName: string;
-    templates: {
-      orderConfirmation: string;
-      orderReady: string;
-      orderCancelled: string;
-      adminNotification: string;
-    };
-  };
-  sms: {
-    twilioAccountSid: string;
-    twilioAuthToken: string;
-    twilioPhoneNumber: string;
-    enabled: boolean;
   };
   theme: {
     logoUrl: string;
@@ -95,6 +74,9 @@ export interface MenuItem {
   category: string;
   imageUrl: string;
   available: boolean;
+  stockQuantity?: number; // Total available stock (null = unlimited)
+  quantitySold?: number; // Track how many sold
+  lowStockThreshold?: number; // Warn when stock is low (default: 5)
   createdAt: Date;
   updatedAt: Date;
 }

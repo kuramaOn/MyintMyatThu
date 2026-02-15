@@ -45,6 +45,8 @@ export async function POST(request: NextRequest) {
 
     const menuItem: Omit<MenuItem, "_id"> = {
       ...body,
+      quantitySold: 0, // Initialize to 0
+      lowStockThreshold: body.lowStockThreshold || 5, // Default to 5
       createdAt: new Date(),
       updatedAt: new Date(),
     };

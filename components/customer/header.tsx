@@ -2,16 +2,17 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { ShoppingCart, Menu, X } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
+import { ShoppingCart } from "lucide-react"
+import { motion } from "framer-motion"
 import { useCart } from "@/contexts/cart-context"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { RestaurantSettings } from "@/types"
 
 export function Header() {
   const { itemCount } = useCart()
   const [isScrolled, setIsScrolled] = useState(false)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [settings, setSettings] = useState<RestaurantSettings | null>(null)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -19,6 +20,36 @@ export function Header() {
     }
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
+
+  useEffect(() => {
+    async function fetchSettings() {
+      try {
+        const res = await fetch("/api/settings", { cache: "no-store" })
+        const data = await res.json()
+        setSettings(data)
+      } catch (error) {
+        console.error("Error fetching settings:", error)
+      }
+    }
+    fetchSettings()
+  }, [])
+
+  // Poll for settings updates every 60 seconds
+  useEffect(() => {
+    async function fetchSettings() {
+      try {
+        const settingsRes = await fetch("/api/settings", { cache: "no-store" })
+        const settingsData = await settingsRes.json()
+        setSettings(settingsData)
+      } catch (error) {
+        console.error("Error polling settings:", error)
+      }
+    }
+
+    const interval = setInterval(fetchSettings, 60000) // Poll every 60 seconds
+
+    return () => clearInterval(interval)
   }, [])
 
   return (
@@ -35,18 +66,14 @@ export function Header() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center">
-            <h1 className="text-3xl font-serif font-bold text-gold">QWEN</h1>
+          <Link href="/menu" className="flex items-center">
+            <h1 className="text-3xl font-serif font-bold text-gold">
+              {settings?.restaurant?.name || "QWEN"}
+            </h1>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
-            <Link
-              href="/"
-              className="text-navy hover:text-gold transition-colors font-medium"
-            >
-              Home
-            </Link>
             <Link
               href="/menu"
               className="text-navy hover:text-gold transition-colors font-medium"
@@ -65,51 +92,19 @@ export function Header() {
             </Button>
           </nav>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden text-navy"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
+          {/* Mobile Cart Button - Always Visible */}
+          <Link href="/cart" className="md:hidden relative">
+            <Button variant="ghost" className="relative">
+              <ShoppingCart className="h-6 w-6 text-navy" />
+              {itemCount > 0 && (
+                <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-gold text-navy text-xs">
+                  {itemCount}
+                </Badge>
+              )}
+            </Button>
+          </Link>
         </div>
 
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden bg-white border-t border-gray-200"
-            >
-              <nav className="flex flex-col py-4 space-y-4">
-                <Link
-                  href="/"
-                  className="text-navy hover:text-gold transition-colors font-medium px-4"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Home
-                </Link>
-                <Link
-                  href="/menu"
-                  className="text-navy hover:text-gold transition-colors font-medium px-4"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Menu
-                </Link>
-                <Link
-                  href="/cart"
-                  className="text-navy hover:text-gold transition-colors font-medium px-4 flex items-center gap-2"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <ShoppingCart className="h-5 w-5" />
-                  Cart {itemCount > 0 && `(${itemCount})`}
-                </Link>
-              </nav>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
     </motion.header>
   )

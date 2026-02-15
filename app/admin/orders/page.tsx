@@ -1,26 +1,35 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Order } from "@/types"
+import { Order, RestaurantSettings } from "@/types"
 import { formatCurrency } from "@/lib/utils"
 import { LoadingSpinner } from "@/components/shared/loading"
 import { useToast } from "@/components/ui/toast"
 import { Clock, CheckCircle, Package, XCircle } from "lucide-react"
+import { requestNotificationPermission, showNotification, playNotificationSound } from "@/lib/notifications"
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>("all")
   const [currency, setCurrency] = useState({ code: "JPY", symbol: "¥", position: "before" })
+  const [settings, setSettings] = useState<RestaurantSettings | null>(null)
   const { addToast } = useToast()
+  
+  // Track previous order count to detect new orders
+  const previousOrderCountRef = useRef<number>(0)
+  const isInitialLoadRef = useRef<boolean>(true)
 
   useEffect(() => {
     fetchOrders()
     fetchSettings()
+    
+    // Request notification permission on mount
+    requestNotificationPermission()
 
     // Poll for new orders every 10 seconds
     const interval = setInterval(fetchOrders, 10000)
@@ -31,6 +40,22 @@ export default function OrdersPage() {
     try {
       const res = await fetch("/api/orders")
       const data = await res.json()
+      
+      // Detect new orders
+      const pendingOrders = data.filter((order: Order) => order.orderStatus === "pending")
+      const currentPendingCount = pendingOrders.length
+      
+      if (!isInitialLoadRef.current && currentPendingCount > previousOrderCountRef.current) {
+        // New order(s) detected!
+        const newOrdersCount = currentPendingCount - previousOrderCountRef.current
+        const latestOrder = pendingOrders[0] // Most recent order
+        
+        handleNewOrderNotification(latestOrder, newOrdersCount)
+      }
+      
+      previousOrderCountRef.current = currentPendingCount
+      isInitialLoadRef.current = false
+      
       setOrders(data)
     } catch (error) {
       console.error("Error fetching orders:", error)
@@ -38,12 +63,42 @@ export default function OrdersPage() {
       setLoading(false)
     }
   }
+  
+  function handleNewOrderNotification(order: Order, count: number) {
+    if (!settings) return
+    
+    const message = count === 1 
+      ? `New order from ${order.customer.name}` 
+      : `${count} new orders received!`
+    
+    // Play sound if enabled
+    if (settings.notifications.sound) {
+      playNotificationSound()
+    }
+    
+    // Show desktop notification if enabled
+    if (settings.notifications.desktop) {
+      showNotification("🔔 New Order!", {
+        body: message,
+        tag: "new-order",
+        requireInteraction: false,
+      })
+    }
+    
+    // Always show toast as fallback
+    addToast({
+      title: "New Order Received!",
+      description: message,
+      type: "success",
+    })
+  }
 
   async function fetchSettings() {
     try {
       const res = await fetch("/api/settings")
       const data = await res.json()
       setCurrency(data.currency)
+      setSettings(data)
     } catch (error) {
       console.error("Error fetching settings:", error)
     }

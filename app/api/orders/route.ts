@@ -36,6 +36,54 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const db = await getDb();
 
+    // Check stock availability and update quantities
+    const menuItemsCollection = db.collection("menuItems");
+    
+    for (const item of body.items) {
+      const menuItem = await menuItemsCollection.findOne({ 
+        _id: typeof item.menuItemId === 'string' 
+          ? new (await import('mongodb')).ObjectId(item.menuItemId)
+          : item.menuItemId 
+      });
+
+      if (!menuItem) {
+        return NextResponse.json(
+          { error: `Menu item not found: ${item.name}` },
+          { status: 400 }
+        );
+      }
+
+      // Check if item has stock tracking enabled
+      if (menuItem.stockQuantity !== null && menuItem.stockQuantity !== undefined) {
+        const remainingStock = (menuItem.stockQuantity || 0) - (menuItem.quantitySold || 0);
+        
+        if (remainingStock < item.quantity) {
+          return NextResponse.json(
+            { error: `Insufficient stock for ${item.name}. Only ${remainingStock} available.` },
+            { status: 400 }
+          );
+        }
+
+        // Update quantity sold
+        const newQuantitySold = (menuItem.quantitySold || 0) + item.quantity;
+        const newRemainingStock = menuItem.stockQuantity - newQuantitySold;
+
+        // Auto-mark as unavailable if stock reaches 0
+        const shouldMarkUnavailable = newRemainingStock <= 0;
+
+        await menuItemsCollection.updateOne(
+          { _id: menuItem._id },
+          {
+            $set: {
+              quantitySold: newQuantitySold,
+              available: shouldMarkUnavailable ? false : menuItem.available,
+              updatedAt: new Date(),
+            },
+          }
+        );
+      }
+    }
+
     const order: Omit<Order, "_id"> = {
       orderId: generateOrderId(),
       customer: body.customer,

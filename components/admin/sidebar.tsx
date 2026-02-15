@@ -14,6 +14,7 @@ import {
   X,
   UtensilsCrossed,
   Database,
+  FolderTree,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -21,6 +22,7 @@ const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/admin" },
   { icon: ShoppingBag, label: "Orders", href: "/admin/orders" },
   { icon: UtensilsCrossed, label: "Menu", href: "/admin/menu" },
+  { icon: FolderTree, label: "Categories", href: "/admin/categories" },
   { icon: Database, label: "Database", href: "/admin/database" },
   { icon: Settings, label: "Settings", href: "/admin/settings" },
 ]

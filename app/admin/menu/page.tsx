@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import Image from "next/image"
-import { Plus, Edit, Trash2, Upload } from "lucide-react"
+import { Plus, Edit, Trash2, Upload, AlertTriangle, Package } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -35,6 +35,8 @@ export default function MenuManagementPage() {
     category: "",
     imageUrl: "",
     available: true,
+    stockQuantity: "",
+    lowStockThreshold: "5",
   })
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string>("")
@@ -105,6 +107,8 @@ export default function MenuManagementPage() {
         category: formData.category,
         imageUrl,
         available: formData.available,
+        stockQuantity: formData.stockQuantity ? parseInt(formData.stockQuantity) : null,
+        lowStockThreshold: formData.lowStockThreshold ? parseInt(formData.lowStockThreshold) : 5,
       }
 
       const url = editingItem
@@ -150,6 +154,8 @@ export default function MenuManagementPage() {
       category: item.category,
       imageUrl: item.imageUrl,
       available: item.available,
+      stockQuantity: item.stockQuantity?.toString() || "",
+      lowStockThreshold: item.lowStockThreshold?.toString() || "5",
     })
     setImagePreview(item.imageUrl)
     setIsDialogOpen(true)
@@ -216,6 +222,8 @@ export default function MenuManagementPage() {
       category: "",
       imageUrl: "",
       available: true,
+      stockQuantity: "",
+      lowStockThreshold: "5",
     })
     setImageFile(null)
     setImagePreview("")
@@ -314,9 +322,52 @@ export default function MenuManagementPage() {
                   {item.description}
                 </p>
 
-                <div className="text-xl font-bold text-gold mb-4">
+                <div className="text-xl font-bold text-gold mb-2">
                   {formatCurrency(item.price, item.currency, "before")}
                 </div>
+
+                {/* Stock Info */}
+                {item.stockQuantity !== null && item.stockQuantity !== undefined && (
+                  <div className="mb-3">
+                    {(() => {
+                      const remainingStock = (item.stockQuantity || 0) - (item.quantitySold || 0);
+                      const isLowStock = remainingStock <= (item.lowStockThreshold || 5) && remainingStock > 0;
+                      const isOutOfStock = remainingStock <= 0;
+
+                      return (
+                        <div className="flex items-center gap-2 text-xs">
+                          <Package className="h-3.5 w-3.5" />
+                          <span className={`font-semibold ${
+                            isOutOfStock ? 'text-red-600' : isLowStock ? 'text-orange-600' : 'text-green-600'
+                          }`}>
+                            {remainingStock} / {item.stockQuantity} in stock
+                          </span>
+                          {isLowStock && (
+                            <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-300 text-xs">
+                              <AlertTriangle className="h-3 w-3 mr-1" />
+                              Low Stock
+                            </Badge>
+                          )}
+                          {isOutOfStock && (
+                            <Badge variant="outline" className="bg-red-50 text-red-700 border-red-300 text-xs">
+                              Out of Stock
+                            </Badge>
+                          )}
+                        </div>
+                      );
+                    })()}
+                    <div className="text-xs text-gray-500 mt-1">
+                      Sold: {item.quantitySold || 0}
+                    </div>
+                  </div>
+                )}
+                {(item.stockQuantity === null || item.stockQuantity === undefined) && (
+                  <div className="mb-3">
+                    <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-300">
+                      Unlimited Stock
+                    </Badge>
+                  </div>
+                )}
 
                 {/* Actions */}
                 <div className="grid grid-cols-3 gap-2">
@@ -464,6 +515,41 @@ export default function MenuManagementPage() {
                   <option value="JPY">JPY (¥)</option>
                   <option value="MMK">MMK (Ks)</option>
                 </select>
+              </div>
+            </div>
+
+            {/* Stock Management */}
+            <div className="border-t pt-4">
+              <h3 className="font-semibold text-navy mb-4">Stock Management</h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="stockQuantity">Stock Quantity</Label>
+                  <Input
+                    id="stockQuantity"
+                    type="number"
+                    min="0"
+                    value={formData.stockQuantity}
+                    onChange={(e) => setFormData({ ...formData, stockQuantity: e.target.value })}
+                    placeholder="Leave empty for unlimited"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Leave empty for unlimited stock. Item becomes unavailable when stock reaches 0.
+                  </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="lowStockThreshold">Low Stock Alert</Label>
+                  <Input
+                    id="lowStockThreshold"
+                    type="number"
+                    min="1"
+                    value={formData.lowStockThreshold}
+                    onChange={(e) => setFormData({ ...formData, lowStockThreshold: e.target.value })}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Get warned when stock falls below this number (default: 5)
+                  </p>
+                </div>
               </div>
             </div>
 
