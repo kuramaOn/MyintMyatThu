@@ -1,0 +1,28 @@
+# Image Placeholders
+
+This directory should contain optimized images for the restaurant.
+
+## Required Images:
+
+### Menu Items (/images/menu/)
+- espresso.jpg
+- cappuccino.jpg
+- matcha.jpg
+- croissant.jpg
+- cheesecake.jpg
+- sandwich.jpg
+- macchiato.jpg
+- chocolate-cake.jpg
+
+### Avatars (/images/avatars/)
+- avatar-1.jpg through avatar-6.jpg
+
+### Hero/OG Images
+- og-image.jpg (1200x630px for Open Graph)
+
+## Notes:
+- Images should be optimized for web (WebP format recommended)
+- Menu images: 400x300px recommended
+- Avatar images: 150x150px recommended
+- Use tools like ImageOptim, TinyPNG, or Squoosh for optimization
+- Current placeholder URLs in code point to local paths
