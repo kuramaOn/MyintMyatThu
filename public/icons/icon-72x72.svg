@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="72" height="72" fill="#FAF8F3" rx="14.4"/>
+  
+  <!-- Gold Circle Border -->
+  <circle cx="36" cy="36" r="25.2" fill="none" stroke="#D4AF37" stroke-width="2.88"/>
+  
+  <!-- QWEN Text -->
+  <text 
+    x="36" 
+    y="41.76" 
+    font-family="'Playfair Display', serif" 
+    font-weight="700" 
+    font-size="14.4" 
+    fill="#1A1A1A" 
+    text-anchor="middle">QWEN</text>
+  
+  <!-- Small decorative element -->
+  <circle cx="36" cy="54" r="1.44" fill="#D4AF37"/>
+</svg>

@@ -27,6 +27,22 @@ export const metadata: Metadata = {
   authors: [{ name: 'QWEN Restaurant' }],
   creator: 'QWEN Restaurant',
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://qwen.restaurant'),
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'QWEN Restaurant',
+    startupImage: [
+      {
+        url: '/icons/icon-512x512.png',
+        media: '(device-width: 414px) and (device-height: 896px)',
+      },
+    ],
+  },
+  applicationName: 'QWEN Restaurant',
+  formatDetection: {
+    telephone: false,
+  },
   openGraph: {
     type: 'website',
     locale: 'en_US',
@@ -61,6 +77,28 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+    viewportFit: 'cover',
+  },
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#D4AF37' },
+    { media: '(prefers-color-scheme: dark)', color: '#D4AF37' },
+  ],
+  icons: {
+    icon: [
+      { url: '/icons/icon-192x192.svg', sizes: '192x192', type: 'image/svg+xml' },
+      { url: '/icons/icon-512x512.svg', sizes: '512x512', type: 'image/svg+xml' },
+    ],
+    apple: [
+      { url: '/icons/apple-icon-120x120.svg', sizes: '120x120', type: 'image/svg+xml' },
+      { url: '/icons/apple-icon-152x152.svg', sizes: '152x152', type: 'image/svg+xml' },
+      { url: '/icons/apple-icon-180x180.svg', sizes: '180x180', type: 'image/svg+xml' },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -70,10 +108,45 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* PWA Meta Tags */}
+        <meta name="application-name" content="QWEN Restaurant" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="QWEN" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="theme-color" content="#D4AF37" />
+        
+        {/* Apple Touch Icons */}
+        <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.svg" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.svg" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.svg" />
+        
+        {/* Splash Screens for iOS */}
+        <link rel="apple-touch-startup-image" href="/icons/icon-512x512.svg" />
+      </head>
       <body
         className={`${inter.variable} ${playfair.variable} ${jetbrains.variable} font-sans antialiased`}
       >
         {children}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').then(
+                    function(registration) {
+                      console.log('ServiceWorker registration successful');
+                    },
+                    function(err) {
+                      console.log('ServiceWorker registration failed: ', err);
+                    }
+                  );
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );
