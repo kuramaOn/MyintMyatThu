@@ -6,6 +6,7 @@ import { useEffect } from "react"
 import { AdminSidebar } from "@/components/admin/sidebar"
 import { ToastProvider } from "@/components/ui/toast"
 import { SessionProvider } from "next-auth/react"
+import { NotificationPermission } from "@/components/shared/notification-permission"
 
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession()
@@ -43,6 +44,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
       <main className="flex-1 lg:ml-0">
         <div className="p-6 lg:p-8 pt-20 lg:pt-8">{children}</div>
       </main>
+      <NotificationPermission />
     </div>
   )
 }
