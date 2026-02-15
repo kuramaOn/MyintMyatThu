@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { Order } from "@/types";
 import { generateOrderId } from "@/lib/utils";
+import { sendOrderNotification } from "@/lib/order-notifications";
 
 export async function GET(request: NextRequest) {
   try {
@@ -105,6 +106,15 @@ export async function POST(request: NextRequest) {
     };
 
     const result = await db.collection<Order>("orders").insertOne(order as any);
+
+    // Send push notification for new order
+    sendOrderNotification(
+      order.orderId,
+      "pending",
+      order.customer.name
+    ).catch(error => {
+      console.error("Failed to send new order notification:", error);
+    });
 
     return NextResponse.json(
       { id: result.insertedId, ...order },

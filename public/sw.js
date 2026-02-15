@@ -75,16 +75,38 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// Handle push notifications (optional for future)
+// Handle push notifications
 self.addEventListener('push', (event) => {
-  const data = event.data ? event.data.json() : {};
+  console.log('Push notification received:', event);
+  
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch (error) {
+    console.error('Error parsing push notification data:', error);
+    data = { title: 'QWEN Restaurant', body: 'New notification' };
+  }
+
   const options = {
     body: data.body || 'New update from QWEN Restaurant',
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/icon-96x96.png',
-    vibrate: [200, 100, 200],
-    tag: 'qwen-notification',
-    requireInteraction: false,
+    icon: data.icon || '/icons/icon-192x192.svg',
+    badge: data.badge || '/icons/icon-96x96.svg',
+    vibrate: data.vibrate || [200, 100, 200],
+    tag: data.tag || 'qwen-notification',
+    requireInteraction: data.requireInteraction || true,
+    data: data.data || {},
+    actions: [
+      {
+        action: 'view',
+        title: 'View Order',
+        icon: '/icons/icon-96x96.svg'
+      },
+      {
+        action: 'close',
+        title: 'Close',
+        icon: '/icons/icon-96x96.svg'
+      }
+    ]
   };
 
   event.waitUntil(
@@ -95,7 +117,23 @@ self.addEventListener('push', (event) => {
 // Handle notification clicks
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+  
+  const urlToOpen = event.notification.data?.url || '/';
+  
   event.waitUntil(
-    clients.openWindow('/')
+    clients.matchAll({ type: 'window', includeUncontrolled: true })
+      .then((windowClients) => {
+        // Check if there's already a window open
+        for (let i = 0; i < windowClients.length; i++) {
+          const client = windowClients[i];
+          if (client.url === new URL(urlToOpen, self.location.origin).href && 'focus' in client) {
+            return client.focus();
+          }
+        }
+        // If no window is open, open a new one
+        if (clients.openWindow) {
+          return clients.openWindow(urlToOpen);
+        }
+      })
   );
 });

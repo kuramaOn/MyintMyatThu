@@ -5,6 +5,7 @@ import { ToastProvider } from "@/components/ui/toast"
 import { Header } from "@/components/customer/header"
 import { Footer } from "@/components/customer/footer"
 import { InstallPrompt } from "@/components/shared/install-prompt"
+import { NotificationPermission } from "@/components/shared/notification-permission"
 
 export default function CustomerLayout({
   children,
@@ -20,6 +21,7 @@ export default function CustomerLayout({
         </main>
         <Footer />
         <InstallPrompt />
+        <NotificationPermission />
       </ToastProvider>
     </CartProvider>
   )

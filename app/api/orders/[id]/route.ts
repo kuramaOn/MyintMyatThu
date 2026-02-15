@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { ObjectId } from "mongodb";
 import { Order, OrderStatus } from "@/types";
+import { sendOrderNotification } from "@/lib/order-notifications";
 
 export async function GET(
   request: NextRequest,
@@ -77,6 +78,21 @@ async function updateOrder(
 
     if (result.matchedCount === 0) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    }
+
+    // Send push notification if status changed
+    if (body.orderStatus) {
+      const updatedOrder = await db.collection<Order>("orders").findOne({ _id: new ObjectId(id) });
+      if (updatedOrder) {
+        // Send notification asynchronously (don't wait for it)
+        sendOrderNotification(
+          updatedOrder.orderId,
+          body.orderStatus,
+          updatedOrder.customer.name
+        ).catch(error => {
+          console.error("Failed to send push notification:", error);
+        });
+      }
     }
 
     return NextResponse.json({ success: true });
