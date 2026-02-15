@@ -49,7 +49,26 @@ export function showNotification(title: string, options?: NotificationOptions) {
  */
 export function playNotificationSound() {
   try {
-    // Using Web Audio API to generate a notification beep
+    // Use custom notification sound
+    const audio = new Audio("/notification.mp3");
+    audio.volume = 0.7; // Set volume to 70%
+    audio.play().catch((error) => {
+      console.error("Error playing notification sound:", error);
+      // Fallback to generated beep if audio file fails
+      playFallbackBeep();
+    });
+  } catch (error) {
+    console.error("Error playing notification sound:", error);
+    // Fallback to generated beep
+    playFallbackBeep();
+  }
+}
+
+/**
+ * Fallback beep sound using Web Audio API
+ */
+function playFallbackBeep() {
+  try {
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
@@ -57,8 +76,7 @@ export function playNotificationSound() {
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.destination);
 
-    // Configure sound (pleasant notification tone)
-    oscillator.frequency.value = 800; // Higher pitch
+    oscillator.frequency.value = 800;
     oscillator.type = "sine";
     
     gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
@@ -66,27 +84,8 @@ export function playNotificationSound() {
 
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.5);
-
-    // Play a second beep
-    setTimeout(() => {
-      const oscillator2 = audioContext.createOscillator();
-      const gainNode2 = audioContext.createGain();
-
-      oscillator2.connect(gainNode2);
-      gainNode2.connect(audioContext.destination);
-
-      oscillator2.frequency.value = 1000;
-      oscillator2.type = "sine";
-      
-      gainNode2.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-
-      oscillator2.start(audioContext.currentTime);
-      oscillator2.stop(audioContext.currentTime + 0.3);
-    }, 200);
-
   } catch (error) {
-    console.error("Error playing notification sound:", error);
+    console.error("Error playing fallback beep:", error);
   }
 }
 
