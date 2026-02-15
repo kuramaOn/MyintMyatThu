@@ -173,7 +173,7 @@ export function InstallPrompt() {
                 </div>
                 <div>
                   <p className="text-gray-700">
-                    Scroll and tap <strong>"Add to Home Screen"</strong>
+                    Scroll and tap <strong>&ldquo;Add to Home Screen&rdquo;</strong>
                   </p>
                 </div>
               </div>
@@ -184,7 +184,7 @@ export function InstallPrompt() {
                 </div>
                 <div>
                   <p className="text-gray-700">
-                    Tap <strong>"Add"</strong> in the top right corner
+                    Tap <strong>&ldquo;Add&rdquo;</strong> in the top right corner
                   </p>
                 </div>
               </div>
