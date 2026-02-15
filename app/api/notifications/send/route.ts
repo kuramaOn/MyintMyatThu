@@ -2,12 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import webpush from "web-push";
 
-// Configure web-push with VAPID keys
-webpush.setVapidDetails(
-  'mailto:admin@qwen.com',
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-);
+// Configure web-push with VAPID keys (trim to remove any whitespace/newlines)
+const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim();
+const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY?.trim();
+
+if (vapidPublicKey && vapidPrivateKey) {
+  webpush.setVapidDetails(
+    'mailto:admin@qwen.com',
+    vapidPublicKey,
+    vapidPrivateKey
+  );
+}
 
 export async function POST(request: NextRequest) {
   try {
