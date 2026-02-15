@@ -8,7 +8,11 @@ const PRECACHE_URLS = [
   '/menu',
   '/cart',
   '/checkout',
+  '/admin',
+  '/admin/orders',
+  '/admin/login',
   '/manifest.json',
+  '/manifest-admin.json',
   '/notification.mp3',
 ];
 

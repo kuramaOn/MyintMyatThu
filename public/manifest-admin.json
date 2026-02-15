@@ -1,14 +1,14 @@
 {
-  "name": "QWEN Restaurant",
-  "short_name": "QWEN",
-  "description": "Premium artisanal coffee and gourmet cuisine ordering app",
-  "start_url": "/",
+  "name": "QWEN Restaurant Admin",
+  "short_name": "QWEN Admin",
+  "description": "Restaurant management and order tracking system",
+  "start_url": "/admin",
   "display": "standalone",
   "background_color": "#FAF8F3",
   "theme_color": "#D4AF37",
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "scope": "/",
-  "categories": ["food", "lifestyle"],
+  "categories": ["business", "productivity"],
   "icons": [
     {
       "src": "/icons/icon-72x72.svg",
@@ -61,31 +61,31 @@
   ],
   "shortcuts": [
     {
-      "name": "Menu",
-      "short_name": "Menu",
-      "description": "Browse our menu",
-      "url": "/menu",
-      "icons": [{ "src": "/icons/icon-96x96.svg", "sizes": "96x96" }]
-    },
-    {
-      "name": "Cart",
-      "short_name": "Cart",
-      "description": "View your cart",
-      "url": "/cart",
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View restaurant statistics",
+      "url": "/admin",
       "icons": [{ "src": "/icons/icon-96x96.svg", "sizes": "96x96" }]
     },
     {
       "name": "Orders",
       "short_name": "Orders",
-      "description": "Track your orders",
-      "url": "/orders",
+      "description": "Manage customer orders",
+      "url": "/admin/orders",
       "icons": [{ "src": "/icons/icon-96x96.svg", "sizes": "96x96" }]
     },
     {
-      "name": "Admin Panel",
-      "short_name": "Admin",
-      "description": "Manage restaurant orders",
-      "url": "/admin",
+      "name": "Menu",
+      "short_name": "Menu",
+      "description": "Edit menu items",
+      "url": "/admin/menu",
+      "icons": [{ "src": "/icons/icon-96x96.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Settings",
+      "short_name": "Settings",
+      "description": "Configure restaurant settings",
+      "url": "/admin/settings",
       "icons": [{ "src": "/icons/icon-96x96.svg", "sizes": "96x96" }]
     }
   ]
