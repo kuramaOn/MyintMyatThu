@@ -37,7 +37,7 @@ export default function CheckoutPage() {
 
   // Messenger prompt state
   const [showMessengerPrompt, setShowMessengerPrompt] = useState(false)
-  const [pendingMessengerData, setPendingMessengerData] = useState<{ username: string; message: string } | null>(null)
+  const [pendingMessengerData, setPendingMessengerData] = useState<{ username: string; message: string; orderId?: string } | null>(null)
   const { shouldPrompt } = useMessengerPrompt()
 
   // Handler for Messenger prompt confirmation
@@ -45,7 +45,22 @@ export default function CheckoutPage() {
     if (pendingMessengerData) {
       openMessengerWithMessage(pendingMessengerData.username, pendingMessengerData.message);
       setPendingMessengerData(null);
+      // Now redirect to order page after opening Messenger
+      if (pendingMessengerData.orderId) {
+        setTimeout(() => {
+          router.push(`/orders/${pendingMessengerData.orderId}`);
+        }, 500); // Small delay to ensure Messenger opens
+      }
     }
+  }
+
+  // Handler for Messenger prompt cancel
+  const handleMessengerPromptCancel = () => {
+    // User cancelled, but order is still created, redirect them anyway
+    if (pendingMessengerData?.orderId) {
+      router.push(`/orders/${pendingMessengerData.orderId}`);
+    }
+    setPendingMessengerData(null);
   }
 
   useEffect(() => {
@@ -152,7 +167,7 @@ export default function CheckoutPage() {
       // Clear cart
       clearCart()
 
-      // Redirect based on payment method
+      // Handle Messenger payment differently - show prompt before redirect
       if (paymentMethod === "messenger") {
         // Create message with order details
         const orderSummary = `🍽️ New Order - ${order.orderId}
@@ -171,12 +186,20 @@ ${specialInstructions ? `📝 Special Instructions:\n${specialInstructions}\n` :
         // Open Messenger - show prompt if needed
         if (settings?.messenger.username) {
           if (shouldPrompt) {
-            // Show permission prompt first
+            // Show permission prompt first - don't redirect yet
             setPendingMessengerData({
               username: settings.messenger.username,
-              message: orderSummary
+              message: orderSummary,
+              orderId: order.orderId
             });
             setShowMessengerPrompt(true);
+            // Success message
+            addToast({
+              title: "Order placed!",
+              description: "Opening Messenger to complete payment...",
+              type: "success",
+            });
+            return; // Don't redirect yet, wait for user to interact with prompt
           } else {
             // User previously dismissed prompt, open directly
             openMessengerWithMessage(settings.messenger.username, orderSummary);
@@ -184,7 +207,7 @@ ${specialInstructions ? `📝 Special Instructions:\n${specialInstructions}\n` :
         }
       }
 
-      // Redirect to confirmation
+      // Redirect to confirmation (for non-Messenger or after Messenger opened)
       router.push(`/orders/${order.orderId}`)
 
       addToast({
@@ -541,7 +564,10 @@ ${specialInstructions ? `📝 Special Instructions:\n${specialInstructions}\n` :
       {/* Messenger Permission Prompt */}
       <MessengerPrompt
         isOpen={showMessengerPrompt}
-        onClose={() => setShowMessengerPrompt(false)}
+        onClose={() => {
+          setShowMessengerPrompt(false);
+          handleMessengerPromptCancel();
+        }}
         onConfirm={handleMessengerPromptConfirm}
         username={pendingMessengerData?.username || ''}
         message={pendingMessengerData?.message || ''}
