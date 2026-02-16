@@ -3,6 +3,7 @@ import { getDb } from "@/lib/db";
 import { ObjectId } from "mongodb";
 import { Order, OrderStatus } from "@/types";
 import { sendOrderNotification } from "@/lib/order-notifications";
+import { orderEvents } from "@/lib/order-events";
 
 export async function GET(
   request: NextRequest,
@@ -84,6 +85,14 @@ async function updateOrder(
     if (body.orderStatus) {
       const updatedOrder = await db.collection<Order>("orders").findOne({ _id: new ObjectId(id) });
       if (updatedOrder) {
+        // Emit real-time event for instant update
+        orderEvents.emit({
+          type: 'order-update',
+          orderId: updatedOrder.orderId,
+          status: body.orderStatus,
+          order: updatedOrder
+        });
+
         // Send notification asynchronously (don't wait for it)
         sendOrderNotification(
           updatedOrder.orderId,

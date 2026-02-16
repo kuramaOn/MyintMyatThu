@@ -17,6 +17,7 @@ import { containerVariants, itemVariants } from "@/lib/animations"
 import { LoadingSpinner } from "@/components/shared/loading"
 import { requestNotificationPermission, showNotification, playNotificationSound } from "@/lib/notifications"
 import { useToast } from "@/components/ui/toast"
+import { useOrderStream } from "@/lib/use-order-stream"
 
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
@@ -25,54 +26,54 @@ export default function AdminDashboardPage() {
   const [currency, setCurrency] = useState({ code: "JPY", symbol: "¥", position: "before" })
   const [settings, setSettings] = useState<RestaurantSettings | null>(null)
   
-  const previousPendingCountRef = useRef<number>(0)
-  const isInitialLoadRef = useRef<boolean>(true)
   const { addToast } = useToast()
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const [statsRes, ordersRes, settingsRes] = await Promise.all([
-          fetch("/api/stats"),
-          fetch("/api/orders"),
-          fetch("/api/settings"),
-        ])
-
-        const statsData = await statsRes.json()
-        const ordersData = await ordersRes.json()
-        const settingsData = await settingsRes.json()
-
-        // Detect new pending orders
-        const currentPendingCount = statsData.pending
-        if (!isInitialLoadRef.current && currentPendingCount > previousPendingCountRef.current) {
-          handleNewOrderNotification(currentPendingCount - previousPendingCountRef.current, settingsData)
-        }
-        previousPendingCountRef.current = currentPendingCount
-        isInitialLoadRef.current = false
-
-        setStats(statsData)
-        setRecentOrders(ordersData.slice(0, 10))
-        setCurrency(settingsData.currency)
-        setSettings(settingsData)
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error)
-      } finally {
-        setLoading(false)
-      }
+  // Real-time order stream
+  useOrderStream((event) => {
+    if (event.type === 'new-order') {
+      // New order received - refresh data and show notification
+      fetchData();
+      handleNewOrderNotification(event.order);
+    } else if (event.type === 'order-update') {
+      // Order status updated - refresh data
+      fetchData();
     }
+  });
 
+  async function fetchData() {
+    try {
+      const [statsRes, ordersRes, settingsRes] = await Promise.all([
+        fetch("/api/stats"),
+        fetch("/api/orders"),
+        fetch("/api/settings"),
+      ])
+
+      const statsData = await statsRes.json()
+      const ordersData = await ordersRes.json()
+      const settingsData = await settingsRes.json()
+
+      setStats(statsData)
+      setRecentOrders(ordersData.slice(0, 10))
+      setCurrency(settingsData.currency)
+      setSettings(settingsData)
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
     fetchData()
     
     // Request notification permission
     requestNotificationPermission()
-
-    // Poll every 30 seconds
-    const interval = setInterval(fetchData, 30000)
-    return () => clearInterval(interval)
   }, [])
   
-  function handleNewOrderNotification(count: number, settingsData: RestaurantSettings) {
-    const message = count === 1 ? "1 new order received!" : `${count} new orders received!`
+  function handleNewOrderNotification(order: Order) {
+    if (!settings) return;
+    
+    const message = `New order from ${order.customer.name}`;
     
     // Show in-app toast notification (always visible)
     addToast({
@@ -82,12 +83,12 @@ export default function AdminDashboardPage() {
     })
     
     // Play sound if enabled
-    if (settingsData.notifications.sound) {
+    if (settings.notifications.sound) {
       playNotificationSound()
     }
     
     // Show browser notification if enabled
-    if (settingsData.notifications.desktop) {
+    if (settings.notifications.desktop) {
       showNotification("🔔 New Order!", {
         body: message,
         tag: "new-order-dashboard",

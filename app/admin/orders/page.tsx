@@ -11,6 +11,7 @@ import { LoadingSpinner } from "@/components/shared/loading"
 import { useToast } from "@/components/ui/toast"
 import { Clock, CheckCircle, Package, XCircle } from "lucide-react"
 import { requestNotificationPermission, showNotification, playNotificationSound } from "@/lib/notifications"
+import { useOrderStream } from "@/lib/use-order-stream"
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
@@ -19,10 +20,18 @@ export default function OrdersPage() {
   const [currency, setCurrency] = useState({ code: "JPY", symbol: "¥", position: "before" })
   const [settings, setSettings] = useState<RestaurantSettings | null>(null)
   const { addToast } = useToast()
-  
-  // Track previous order count to detect new orders
-  const previousOrderCountRef = useRef<number>(0)
-  const isInitialLoadRef = useRef<boolean>(true)
+
+  // Real-time order stream
+  useOrderStream((event) => {
+    if (event.type === 'new-order') {
+      // New order received - refresh and notify
+      fetchOrders();
+      handleNewOrderNotification(event.order);
+    } else if (event.type === 'order-update') {
+      // Order status updated - refresh
+      fetchOrders();
+    }
+  });
 
   useEffect(() => {
     fetchOrders()
@@ -30,31 +39,12 @@ export default function OrdersPage() {
     
     // Request notification permission on mount
     requestNotificationPermission()
-
-    // Poll for new orders every 10 seconds
-    const interval = setInterval(fetchOrders, 10000)
-    return () => clearInterval(interval)
   }, [])
 
   async function fetchOrders() {
     try {
       const res = await fetch("/api/orders")
       const data = await res.json()
-      
-      // Detect new orders
-      const pendingOrders = data.filter((order: Order) => order.orderStatus === "pending")
-      const currentPendingCount = pendingOrders.length
-      
-      if (!isInitialLoadRef.current && currentPendingCount > previousOrderCountRef.current) {
-        // New order(s) detected!
-        const newOrdersCount = currentPendingCount - previousOrderCountRef.current
-        const latestOrder = pendingOrders[0] // Most recent order
-        
-        handleNewOrderNotification(latestOrder, newOrdersCount)
-      }
-      
-      previousOrderCountRef.current = currentPendingCount
-      isInitialLoadRef.current = false
       
       setOrders(data)
     } catch (error) {
@@ -64,12 +54,10 @@ export default function OrdersPage() {
     }
   }
   
-  function handleNewOrderNotification(order: Order, count: number) {
+  function handleNewOrderNotification(order: Order) {
     if (!settings) return
     
-    const message = count === 1 
-      ? `New order from ${order.customer.name}` 
-      : `${count} new orders received!`
+    const message = `New order from ${order.customer.name}`;
     
     // Play sound if enabled
     if (settings.notifications.sound) {

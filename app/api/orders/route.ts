@@ -3,6 +3,7 @@ import { getDb } from "@/lib/db";
 import { Order } from "@/types";
 import { generateOrderId } from "@/lib/utils";
 import { sendOrderNotification } from "@/lib/order-notifications";
+import { orderEvents } from "@/lib/order-events";
 
 export async function GET(request: NextRequest) {
   try {
@@ -106,6 +107,12 @@ export async function POST(request: NextRequest) {
     };
 
     const result = await db.collection<Order>("orders").insertOne(order as any);
+
+    // Emit real-time event for instant notification
+    orderEvents.emit({
+      type: 'new-order',
+      order: { ...order, _id: result.insertedId }
+    });
 
     // Send push notification for new order
     sendOrderNotification(
