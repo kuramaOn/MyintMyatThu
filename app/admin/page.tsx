@@ -16,6 +16,7 @@ import { formatCurrency } from "@/lib/utils"
 import { containerVariants, itemVariants } from "@/lib/animations"
 import { LoadingSpinner } from "@/components/shared/loading"
 import { requestNotificationPermission, showNotification, playNotificationSound } from "@/lib/notifications"
+import { useToast } from "@/components/ui/toast"
 
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
@@ -26,6 +27,7 @@ export default function AdminDashboardPage() {
   
   const previousPendingCountRef = useRef<number>(0)
   const isInitialLoadRef = useRef<boolean>(true)
+  const { addToast } = useToast()
 
   useEffect(() => {
     async function fetchData() {
@@ -72,10 +74,19 @@ export default function AdminDashboardPage() {
   function handleNewOrderNotification(count: number, settingsData: RestaurantSettings) {
     const message = count === 1 ? "1 new order received!" : `${count} new orders received!`
     
+    // Show in-app toast notification (always visible)
+    addToast({
+      title: "🔔 New Order!",
+      description: message,
+      type: "success",
+    })
+    
+    // Play sound if enabled
     if (settingsData.notifications.sound) {
       playNotificationSound()
     }
     
+    // Show browser notification if enabled
     if (settingsData.notifications.desktop) {
       showNotification("🔔 New Order!", {
         body: message,
