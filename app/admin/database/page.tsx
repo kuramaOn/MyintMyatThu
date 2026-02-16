@@ -191,6 +191,36 @@ export default function DatabaseControlPanel() {
     }
   }
 
+  async function exportToExcel() {
+    setProcessing(true)
+    try {
+      const res = await fetch("/api/database/export")
+      const blob = await res.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `qwen_restaurant_export_${Date.now()}.xlsx`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+
+      addToast({
+        title: "Success",
+        description: "Database exported to Excel successfully",
+        type: "success",
+      })
+    } catch (error) {
+      addToast({
+        title: "Error",
+        description: "Failed to export to Excel",
+        type: "error",
+      })
+    } finally {
+      setProcessing(false)
+    }
+  }
+
   async function restoreDatabase() {
     if (!restoreFile) return
 
@@ -693,7 +723,7 @@ export default function DatabaseControlPanel() {
             Full database backup, restore, and reset operations
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg">
               <h3 className="font-bold text-navy mb-2">Backup Database</h3>
               <p className="text-sm text-gray-600 mb-4">
@@ -713,7 +743,23 @@ export default function DatabaseControlPanel() {
                 disabled={processing}
               >
                 <Download className="mr-2 h-4 w-4" />
-                Backup Now
+                Backup (JSON)
+              </Button>
+            </div>
+
+            <div className="p-4 border-2 border-dashed border-green-300 rounded-lg bg-green-50">
+              <h3 className="font-bold text-green-600 mb-2">Export to Excel</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Download all data as Excel spreadsheet
+              </p>
+              <Button
+                variant="outline"
+                className="w-full text-green-600 hover:text-green-700 border-green-300 hover:border-green-400"
+                onClick={exportToExcel}
+                disabled={processing}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Export Excel
               </Button>
             </div>
 
