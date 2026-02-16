@@ -7,6 +7,7 @@ import { AdminSidebar } from "@/components/admin/sidebar"
 import { ToastProvider } from "@/components/ui/toast"
 import { SessionProvider } from "next-auth/react"
 import { NotificationPermission } from "@/components/shared/notification-permission"
+import { NetworkStatus } from "@/components/shared/network-status"
 
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession()
@@ -45,6 +46,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         <div className="p-6 lg:p-8 pt-20 lg:pt-8">{children}</div>
       </main>
       <NotificationPermission />
+      <NetworkStatus />
     </div>
   )
 }

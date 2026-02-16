@@ -65,28 +65,28 @@
       "short_name": "Menu",
       "description": "Browse our menu",
       "url": "/menu",
-      "icons": [{ "src": "/icons/icon-96x96.svg", "sizes": "96x96" }]
+      "icons": [{ "src": "/icons/shortcut-menu.svg", "sizes": "96x96", "type": "image/svg+xml" }]
     },
     {
       "name": "Cart",
       "short_name": "Cart",
       "description": "View your cart",
       "url": "/cart",
-      "icons": [{ "src": "/icons/icon-96x96.svg", "sizes": "96x96" }]
+      "icons": [{ "src": "/icons/shortcut-cart.svg", "sizes": "96x96", "type": "image/svg+xml" }]
     },
     {
       "name": "Orders",
       "short_name": "Orders",
       "description": "Track your orders",
       "url": "/orders",
-      "icons": [{ "src": "/icons/icon-96x96.svg", "sizes": "96x96" }]
+      "icons": [{ "src": "/icons/shortcut-orders.svg", "sizes": "96x96", "type": "image/svg+xml" }]
     },
     {
       "name": "Admin Panel",
       "short_name": "Admin",
       "description": "Manage restaurant orders",
       "url": "/admin",
-      "icons": [{ "src": "/icons/icon-96x96.svg", "sizes": "96x96" }]
+      "icons": [{ "src": "/icons/shortcut-admin.svg", "sizes": "96x96", "type": "image/svg+xml" }]
     }
   ]
 }

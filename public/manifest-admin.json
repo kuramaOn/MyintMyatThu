@@ -65,28 +65,28 @@
       "short_name": "Dashboard",
       "description": "View restaurant statistics",
       "url": "/admin",
-      "icons": [{ "src": "/icons/icon-96x96.svg", "sizes": "96x96" }]
+      "icons": [{ "src": "/icons/shortcut-admin.svg", "sizes": "96x96", "type": "image/svg+xml" }]
     },
     {
       "name": "Orders",
       "short_name": "Orders",
       "description": "Manage customer orders",
       "url": "/admin/orders",
-      "icons": [{ "src": "/icons/icon-96x96.svg", "sizes": "96x96" }]
+      "icons": [{ "src": "/icons/shortcut-orders.svg", "sizes": "96x96", "type": "image/svg+xml" }]
     },
     {
       "name": "Menu",
       "short_name": "Menu",
       "description": "Edit menu items",
       "url": "/admin/menu",
-      "icons": [{ "src": "/icons/icon-96x96.svg", "sizes": "96x96" }]
+      "icons": [{ "src": "/icons/shortcut-menu.svg", "sizes": "96x96", "type": "image/svg+xml" }]
     },
     {
       "name": "Settings",
       "short_name": "Settings",
       "description": "Configure restaurant settings",
       "url": "/admin/settings",
-      "icons": [{ "src": "/icons/icon-96x96.svg", "sizes": "96x96" }]
+      "icons": [{ "src": "/icons/shortcut-admin.svg", "sizes": "96x96", "type": "image/svg+xml" }]
     }
   ]
 }

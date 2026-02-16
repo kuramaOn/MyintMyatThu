@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { motion } from "framer-motion"
 import { 
   Database, 
@@ -83,11 +83,7 @@ export default function DatabaseControlPanel() {
   const [restoreFile, setRestoreFile] = useState<File | null>(null)
   const { addToast } = useToast()
 
-  useEffect(() => {
-    fetchStats()
-  }, [])
-
-  async function fetchStats() {
+  const fetchStats = useCallback(async () => {
     try {
       const res = await fetch("/api/database/stats", { cache: "no-store" })
       const data = await res.json()
@@ -102,7 +98,11 @@ export default function DatabaseControlPanel() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [addToast])
+
+  useEffect(() => {
+    fetchStats()
+  }, [fetchStats])
 
   async function clearCollection(collection: string) {
     setProcessing(true)

@@ -16,6 +16,7 @@ import { formatCurrency } from "@/lib/utils"
 import { fadeInUpVariants, itemVariants } from "@/lib/animations"
 import { RestaurantSettings, PaymentMethod } from "@/types"
 import { openMessengerWithMessage } from "@/lib/messenger-helper"
+import { MessengerPrompt, useMessengerPrompt } from "@/components/shared/messenger-prompt"
 
 export default function CheckoutPage() {
   const router = useRouter()
@@ -33,6 +34,19 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null)
   const [paymentScreenshot, setPaymentScreenshot] = useState<File | null>(null)
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null)
+
+  // Messenger prompt state
+  const [showMessengerPrompt, setShowMessengerPrompt] = useState(false)
+  const [pendingMessengerData, setPendingMessengerData] = useState<{ username: string; message: string } | null>(null)
+  const { shouldPrompt } = useMessengerPrompt()
+
+  // Handler for Messenger prompt confirmation
+  const handleMessengerPromptConfirm = () => {
+    if (pendingMessengerData) {
+      openMessengerWithMessage(pendingMessengerData.username, pendingMessengerData.message);
+      setPendingMessengerData(null);
+    }
+  }
 
   useEffect(() => {
     if (items.length === 0) {
@@ -154,9 +168,19 @@ ${items.map((item, index) => `${index + 1}. ${item.name} x${item.quantity} - ${f
 ${specialInstructions ? `📝 Special Instructions:\n${specialInstructions}\n` : ''}
 ⏰ Order Time: ${new Date().toLocaleString()}`;
 
-        // Open Messenger using smart helper (handles PWA, mobile, desktop)
+        // Open Messenger - show prompt if needed
         if (settings?.messenger.username) {
-          openMessengerWithMessage(settings.messenger.username, orderSummary);
+          if (shouldPrompt) {
+            // Show permission prompt first
+            setPendingMessengerData({
+              username: settings.messenger.username,
+              message: orderSummary
+            });
+            setShowMessengerPrompt(true);
+          } else {
+            // User previously dismissed prompt, open directly
+            openMessengerWithMessage(settings.messenger.username, orderSummary);
+          }
         }
       }
 
@@ -513,6 +537,15 @@ ${specialInstructions ? `📝 Special Instructions:\n${specialInstructions}\n` :
           </div>
         </div>
       </div>
+
+      {/* Messenger Permission Prompt */}
+      <MessengerPrompt
+        isOpen={showMessengerPrompt}
+        onClose={() => setShowMessengerPrompt(false)}
+        onConfirm={handleMessengerPromptConfirm}
+        username={pendingMessengerData?.username || ''}
+        message={pendingMessengerData?.message || ''}
+      />
     </div>
   )
 }

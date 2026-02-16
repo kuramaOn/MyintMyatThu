@@ -13,6 +13,7 @@ import { Clock, CheckCircle, Package, XCircle } from "lucide-react"
 import { requestNotificationPermission, showNotification, playNotificationSound } from "@/lib/notifications"
 import { useOrderStream } from "@/lib/use-order-stream"
 import { debugNotificationSetup } from "@/lib/debug-notifications"
+import { ConnectionStatus } from "@/components/shared/network-status"
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
@@ -20,6 +21,7 @@ export default function OrdersPage() {
   const [filter, setFilter] = useState<string>("all")
   const [currency, setCurrency] = useState({ code: "JPY", symbol: "¥", position: "before" })
   const [settings, setSettings] = useState<RestaurantSettings | null>(null)
+  const [streamConnected, setStreamConnected] = useState(false)
   const { addToast } = useToast()
 
   // Debug notification setup on mount
@@ -27,17 +29,22 @@ export default function OrdersPage() {
     debugNotificationSetup();
   }, []);
 
-  // Real-time order stream
-  useOrderStream((event) => {
-    if (event.type === 'new-order') {
-      // New order received - refresh and notify
-      fetchOrders();
-      handleNewOrderNotification(event.order);
-    } else if (event.type === 'order-update') {
-      // Order status updated - refresh
-      fetchOrders();
+  // Real-time order stream with connection status
+  const { status } = useOrderStream(
+    (event) => {
+      if (event.type === 'new-order') {
+        // New order received - refresh and notify
+        fetchOrders();
+        handleNewOrderNotification(event.order);
+      } else if (event.type === 'order-update') {
+        // Order status updated - refresh
+        fetchOrders();
+      }
+    },
+    (status) => {
+      setStreamConnected(status.isConnected);
     }
-  });
+  );
 
   useEffect(() => {
     fetchOrders()
@@ -150,8 +157,15 @@ export default function OrdersPage() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <h1 className="text-4xl font-serif font-bold text-navy mb-2">Orders</h1>
-        <p className="text-gray-600">Manage and track all customer orders</p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-4xl font-serif font-bold text-navy mb-2">Orders</h1>
+            <p className="text-gray-600">Manage and track all customer orders</p>
+          </div>
+          <div className="bg-white rounded-lg px-4 py-2 shadow-sm border border-gray-200">
+            <ConnectionStatus isConnected={streamConnected} label="Real-time Updates" />
+          </div>
+        </div>
       </motion.div>
 
       {/* Stats */}

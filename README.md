@@ -52,8 +52,15 @@ A premium restaurant ordering system built with Next.js 14, featuring a beautifu
    ```
    MONGODB_URI="your-mongodb-uri"
    NEXTAUTH_SECRET="your-secret-key"
-   NEXTAUTH_URL="http://localhost:3000"
+   NEXTAUTH_URL="http://localhost:6001"
    BLOB_READ_WRITE_TOKEN="your-vercel-blob-token"
+   NEXT_PUBLIC_VAPID_PUBLIC_KEY="your-vapid-public-key"
+   VAPID_PRIVATE_KEY="your-vapid-private-key"
+   ```
+   
+   Generate VAPID keys for push notifications:
+   ```bash
+   node scripts/generate-vapid-keys.js
    ```
 
 4. Seed the database:
