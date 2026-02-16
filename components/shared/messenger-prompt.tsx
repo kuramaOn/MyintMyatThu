@@ -83,7 +83,7 @@ export function MessengerPrompt({ isOpen, onClose, onConfirm, username, message 
               className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
             />
             <label htmlFor="dont-show-again" className="text-gray-600 cursor-pointer">
-              Don't show this again
+              Don&apos;t show this again
             </label>
           </div>
         </div>
