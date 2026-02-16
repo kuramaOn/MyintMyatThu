@@ -12,6 +12,7 @@ import { useToast } from "@/components/ui/toast"
 import { Clock, CheckCircle, Package, XCircle } from "lucide-react"
 import { requestNotificationPermission, showNotification, playNotificationSound } from "@/lib/notifications"
 import { useOrderStream } from "@/lib/use-order-stream"
+import { debugNotificationSetup } from "@/lib/debug-notifications"
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
@@ -20,6 +21,11 @@ export default function OrdersPage() {
   const [currency, setCurrency] = useState({ code: "JPY", symbol: "¥", position: "before" })
   const [settings, setSettings] = useState<RestaurantSettings | null>(null)
   const { addToast } = useToast()
+
+  // Debug notification setup on mount
+  useEffect(() => {
+    debugNotificationSetup();
+  }, []);
 
   // Real-time order stream
   useOrderStream((event) => {

@@ -46,7 +46,12 @@ self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (request.method !== 'GET') return;
 
-  // Skip API calls for real-time data
+  // Allow SSE connections to pass through without interception
+  if (url.pathname === '/api/orders/stream') {
+    return; // Don't intercept SSE
+  }
+
+  // Skip other API calls (network only, no caching)
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(fetch(request));
     return;

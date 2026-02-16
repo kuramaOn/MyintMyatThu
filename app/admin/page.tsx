@@ -18,6 +18,7 @@ import { LoadingSpinner } from "@/components/shared/loading"
 import { requestNotificationPermission, showNotification, playNotificationSound } from "@/lib/notifications"
 import { useToast } from "@/components/ui/toast"
 import { useOrderStream } from "@/lib/use-order-stream"
+import { debugNotificationSetup } from "@/lib/debug-notifications"
 
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
@@ -27,6 +28,11 @@ export default function AdminDashboardPage() {
   const [settings, setSettings] = useState<RestaurantSettings | null>(null)
   
   const { addToast } = useToast()
+
+  // Debug notification setup on mount
+  useEffect(() => {
+    debugNotificationSetup();
+  }, []);
 
   // Real-time order stream
   useOrderStream((event) => {
