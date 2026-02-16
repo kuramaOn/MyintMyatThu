@@ -15,6 +15,7 @@ import { useToast } from "@/components/ui/toast"
 import { formatCurrency } from "@/lib/utils"
 import { fadeInUpVariants, itemVariants } from "@/lib/animations"
 import { RestaurantSettings, PaymentMethod } from "@/types"
+import { openMessengerWithMessage } from "@/lib/messenger-helper"
 
 export default function CheckoutPage() {
   const router = useRouter()
@@ -153,9 +154,10 @@ ${items.map((item, index) => `${index + 1}. ${item.name} x${item.quantity} - ${f
 ${specialInstructions ? `📝 Special Instructions:\n${specialInstructions}\n` : ''}
 ⏰ Order Time: ${new Date().toLocaleString()}`;
 
-        // Open Messenger with pre-filled message
-        const messengerUrl = `https://m.me/${settings?.messenger.username}?text=${encodeURIComponent(orderSummary)}`;
-        window.open(messengerUrl, "_blank");
+        // Open Messenger using smart helper (handles PWA, mobile, desktop)
+        if (settings?.messenger.username) {
+          openMessengerWithMessage(settings.messenger.username, orderSummary);
+        }
       }
 
       // Redirect to confirmation
