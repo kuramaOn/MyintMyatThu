@@ -4,8 +4,7 @@ import { CartProvider } from "@/contexts/cart-context"
 import { ToastProvider } from "@/components/ui/toast"
 import { Header } from "@/components/customer/header"
 import { Footer } from "@/components/customer/footer"
-import { InstallPrompt } from "@/components/shared/install-prompt"
-import { NotificationPermission } from "@/components/shared/notification-permission"
+import { AppPermissions } from "@/components/shared/app-permissions"
 
 export default function CustomerLayout({
   children,
@@ -20,8 +19,7 @@ export default function CustomerLayout({
           {children}
         </main>
         <Footer />
-        <InstallPrompt />
-        <NotificationPermission />
+        <AppPermissions />
       </ToastProvider>
     </CartProvider>
   )

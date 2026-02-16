@@ -139,8 +139,23 @@ export default function CheckoutPage() {
 
       // Redirect based on payment method
       if (paymentMethod === "messenger") {
-        // Open Messenger
-        window.open(settings?.messenger.link, "_blank")
+        // Create message with order details
+        const orderSummary = `🍽️ New Order - ${order.orderId}
+
+👤 Customer: ${customerName}
+📱 Phone: ${customerPhone}
+
+📋 Order Items:
+${items.map((item, index) => `${index + 1}. ${item.name} x${item.quantity} - ${formatCurrency(item.price * item.quantity, settings?.currency.code || "JPY", settings?.currency.position)}`).join('\n')}
+
+💰 Total: ${formatCurrency(total, settings?.currency.code || "JPY", settings?.currency.position)}
+
+${specialInstructions ? `📝 Special Instructions:\n${specialInstructions}\n` : ''}
+⏰ Order Time: ${new Date().toLocaleString()}`;
+
+        // Open Messenger with pre-filled message
+        const messengerUrl = `https://m.me/${settings?.messenger.username}?text=${encodeURIComponent(orderSummary)}`;
+        window.open(messengerUrl, "_blank");
       }
 
       // Redirect to confirmation
